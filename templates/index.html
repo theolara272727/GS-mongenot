@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <!--Configurações básicas do HTML5-->
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ground Station</title>
+
+  <!--Linkar arquivos .css com os estilos da página-->
+  <link rel="stylesheet" href="../static/css/reset.css">
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="/static/css/leaflet.css" />
+
+  <!--Importar bibliotecas html2canvas, Chart.js e Leaflet.js-->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Adicionar Leaflet para mapas -->
+  <script src="/static/leaflet.js"></script>
+
+  <!--Linkar script para plotagem dos gráficos em JavaScript-->
+  <script src="../static/dinamico.js"></script>
+</head>
+
+<body>
+  <!--Cabeçalho-->
+  <header class="cabecalho">
+    <div class="cabecalho__menu_logos">
+      <!--Importar imagens das logos-->
+      <img class="cabecalho__menu__logo" src="../static/assets/logo_oficial_branca.png" alt="Logo da Czar Space">
+      <img class="cabecalho__menu__logo_horizon" src="../static/assets/patch_mongenot.png" alt="Logo do Mongenot">
+    </div>
+  </header>
+
+
+  <!--Texto Principal-->
+  <main class="main">
+  <div class="layout-container">
+    <div>
+    <div class="tabs-container">
+        
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="aba1">Determinação de atitude</button>
+            <button class="tab-button" data-tab="aba2">Condicionamento da bateria</button>
+            <button class="tab-button" data-tab="aba3">Missões Payload</button>
+            <button class="tab-button" data-tab="aba4">Ciclagem térmica</button>
+        </div>
+
+        <div class="tab-content">
+            <div id="aba1" class="tab-panel active">
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoAtitude"></canvas>
+                </div>
+              </section>  
+            </div>
+            <div id="aba2" class="tab-panel">
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoCorrentePainelSolar1"></canvas>
+                </div>
+                <div class="chartContainer">
+                  <canvas id="graficoCorrentePainelSolar2"></canvas>
+                </div>
+              </section> 
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoCorrentePainelSolar3"></canvas>
+                </div>
+                <div class="chartContainer">
+                  <canvas id="graficoCorrentePainelSolar4"></canvas>
+                </div>
+              </section>  
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoCorrenteBateria"></canvas>
+                </div> 
+              </section> 
+         
+            </div>
+            <div id="aba3" class="tab-panel">
+            </div>
+            <div id="aba4" class="tab-panel">
+
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura1"></canvas>
+                </div>
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura2"></canvas>
+                </div>
+              </section>
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura3"></canvas>
+                </div>
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura4"></canvas>
+                </div>
+              </section>
+              <section class="linha1">
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura5"></canvas>
+                </div>
+                <div class="chartContainer">
+                  <canvas id="graficoTemperatura6"></canvas>
+                </div>
+              </section>
+            </div>  
+        </div>
+
+    </div>
+
+    <!-- Botão de Screenshot-->
+    <section class="linha2">
+      <div class="linha2__mostradores">
+        <p class="linha2__mostradores__mostrador">Tensão Bateria: <span class='corDados'
+            id="Tensao_Bateria">-</span> V </p>
+        <button class="custom-button" id="screenshotButton">Tirar Screenshot</button>
+        <button class="custom-button" id="resetButton">Resetar Gráficos</button>
+      </div>
+    </section>
+    <!--Mostrador Bateria-->
+    <section class="linha2">
+      <div id="batteryFrame">
+        <div class="batteryPercentage">
+          <p class="textoPorcentagem">Bateria do Satélite: <span class='corDados' id="batteryPercentage">-</span> % </p>
+        </div>
+        <canvas id="batteryCanvas" width="500" height="100"></canvas>
+      </div>
+      
+    <!--Caixa de Comando-->
+    </section>
+  </div>
+  <div>
+    <div id="terminal">
+    </div>
+      <div class="linhaComando">
+        <input class="textoComando" type="text" id="commandInput" placeholder="Digite o comando">
+        <button class="custom-button" id="sendCommandButton">Enviar Comando</button>
+      </div>
+  </div>
+  </div>
+  </main>
+
+  <!--Imagem do macaco no canto inferior direito da tela-->
+  <img class="cesar" src="../static/assets/macaco rosa png.png" alt="Icone do César">
+</body>
+
+</html>
