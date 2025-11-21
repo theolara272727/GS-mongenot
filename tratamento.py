@@ -12,13 +12,92 @@ dados_HK = []
 ser = None # Variável para a porta serial
 arduino_connected = False
 terminalMessage = "aaa"
+modo_atual = '0'
+# 0 - inicialziacao temperatura_1 até temperatura_6; corrente bateria; tensao bateria;
+# COM - teste de comunicacao - terminal
+# CT - Controle termico temperatura_1 até temperatura_6; corrente bateria; tensao bateria;
+# IV - Teste pos vibracao - terminal
+# ANT - Abertura antena - terminal
+# CB - Controle de bateria tensao_painel_solar1; tensao_painel_solar2; tensao_painel_solar3; tensao_painel_solar4; corrente_painel_solar1; corrente_painel_solar2; corrente_painel_solar3; corrente_painel_solar4; tensao de bateria; corrente bateria
+# EST - estabilidade -terminal 
+# DET - determinacao  tensao_painel_solar1; tensao_painel_solar2; tensao_painel_solar3; tensao_painel_solar4; girometro_z; azimute
+# CA1 - Controle atitude 1: tensao_painel_solar1; tensao_painel_solar2; tensao_painel_solar3; tensao_painel_solar4; girometro_z; azimute
+# CA2 - controle atitude 2: tensao_painel_solar1; tensao_painel_solar2; tensao_painel_solar3; tensao_painel_solar4; girometro_z; azimute
+# M1 - missao 1 - terminal
+# M2 - missao 2 - terminal
+modos = ['0','COM','CT','IV','ANT','CB','EST','DET','CA1','CA2','M1','M2']
 
 tipos_dados = [
     'temperatura1', 'temperatura2', 'temperatura3', 'temperatura4',
-    'temperatura5', 'temperatura6', 'atitude', 'tensao_bateria',
-    'corrente_bateria', 'corrente_painelSolar1', 'corrente_painelSolar2',
-    'corrente_painelSolar3', 'corrente_painelSolar4',
+    'temperatura5', 'temperatura6', 'girometroZ', 'tensao_bateria',
+    'corrente_bateria', 'corrente_painelSolar1', 'tensao_painelSolar1', 'corrente_painelSolar2', 'tensao_painelSolar2',
+    'corrente_painelSolar3', 'tensao_painelSolar3','corrente_painelSolar4','tensao_painelSolar4'
 ]
+telemetria_por_modo = {
+    '0' : [],
+    'COM' : [],
+    'IV' : [],
+    'ANT' : [],
+    'EST' : [],
+    'M1' : [],
+    'M2' : [],
+    # Controle Térmico
+    "CT": [
+        "temperatura1", 
+        "temperatura2", 
+        "temperatura3", 
+        "temperatura4", 
+        "temperatura5", 
+        "temperatura6", 
+        "corrente_bateria", 
+        "tensao_bateria"
+    ],
+    
+    # Controle de Bateria
+    "CB": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "corrente_painelSolar1", 
+        "corrente_painelSolar2", 
+        "corrente_painelSolar3", 
+        "corrente_painelSolar4", 
+        "tensao_bateria", 
+        "corrente_bateria"
+    ],
+    
+    # Determinação de Atitude
+    "DET": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ],
+    
+    # Controle Atitude 1
+    "CA1": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ],
+    
+    # Controle Atitude 2
+    "CA2": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ]
+}
+
 num_dados = len(tipos_dados)
 # Últimos valores válidos (usados para substituir dados corrompidos)
 # A estrutura de dados de "últimos valores" deve ser um dicionário para fácil acesso.
@@ -29,16 +108,21 @@ ultimo_HK = {
     'temperatura4': 0.0,
     'temperatura5': 0.0,
     'temperatura6': 0.0,
-    'atitude': 0.0,
+    'girometroZ': 0.0,
     'tensao_bateria': 0.0,
     'corrente_bateria': 0.0,
     'corrente_painelSolar1': 0.0,
     'corrente_painelSolar2': 0.0,
     'corrente_painelSolar3': 0.0,
     'corrente_painelSolar4': 0.0,
+    'tensao_painelSolar1': 0.0,
+    'tensao_painelSolar2': 0.0,
+    'tensao_painelSolar3': 0.0,
+    'tensao_painelSolar4': 0.0,
+    'azimute': 0.0,
 
 }
-
+tipos_dados_atual = []
 
 # --- Funções de Ajuda ---
 def verifica_nulo(valor_str, ultimo_valor_valido, nome_campo):
@@ -96,6 +180,7 @@ def read_data():
     global ser
     global ultimo_HK
     global terminalMessage
+    global modo_atual
     # Loop principal para ler dados após a conexão
     while True:
         try:
@@ -110,15 +195,15 @@ def read_data():
                         parts = line.split(' ')
                         del parts[0]
                         # Processa os dados HK
-                        if len(parts) == num_dados:
+                        if len(parts) >= len(tipos_dados_atual):
                             # Cria um dicionário com os novos valores para facilitar a manipulação
                             new_hk_data = {}
-                            for i, key in enumerate(tipos_dados):
+                            for i, key in enumerate(tipos_dados_atual):
                                     new_hk_data[key] = verifica_nulo(parts[i], ultimo_HK[key], key)
                             
                             # Atualiza os dados globais e salva no arquivo
                             ultimo_HK.update(new_hk_data)
-                            dados_HK = list(new_hk_data.values())
+                            dados_HK = list(ultimo_HK.values())
                     else:
                         terminalMessage = line
 
@@ -148,18 +233,23 @@ def get_sensor_data():
 
     global dados_HK
 
-    print(f"Print: {dados_HK[0]}")
-    if len(dados_HK) < num_dados:
+    if len(dados_HK) < len(tipos_dados_atual):
         print("Aviso: Dados incompletos. A thread de leitura pode estar se conectando ou sem dados.")
         # Retorna um erro HTTP 503 (Serviço Indisponível)
         return jsonify({"error": "Dados do sensor ainda não disponíveis ou incompletos."}), 503 
     data_to_send = dict(zip(tipos_dados,dados_HK))
-
+    data_to_send.update({'modo':modo_atual})
     return jsonify(data_to_send)
 
 @app.route('/sendCommand', methods=['POST'])
 def send_command():
+    global modo_atual
+    global tipos_dados_atual
     command = request.json['command']
+    if(command[:5] == "Modo_"):
+        modo_atual = command[5:]
+        tipos_dados_atual = telemetria_por_modo[modo_atual]
+        print("Modo mudado para " + modo_atual + "\n")
     print("Comando: - " + command + " - enviado com sucesso!")
     ser.write(command.encode())
     return 'Comando enviado com sucesso!'

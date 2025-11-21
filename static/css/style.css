@@ -14,6 +14,9 @@
 
 body{
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    height: 100%;
 }
 
 .cabecalho{
@@ -53,11 +56,13 @@ body{
 }
 
 .main{
-    padding: 1% 10% 1% 10%;
-    display: flex;
-    flex-direction: column;
+    padding: 1% 1% 1% 1%;
+    display: flex; 
     justify-content: space-between;
     text-align: center;
+    
+    height: calc(100vh - 45px); 
+    max-width: 100%;
 }
 
 .botao{
@@ -297,10 +302,10 @@ body{
 
 #terminal {
     width: 100%;
-    max-width: 600px;
-
-    margin-left: auto;
-    margin-right: auto;
+    height: 100%;
+    flex-grow: 1; 
+    margin-left: 0;
+    margin-right: 0;
         overflow-y: auto;   
 
     background-color: #1e1e1e;
@@ -321,9 +326,21 @@ body{
     text-align: left;
  }
 
+.terminal-section {
+    display: flex;
+    flex-direction: column;
+    width: 35%; /* Ocupa os 35% restantes */
+    padding: 1% 1% 1% 1%; /* Adiciona padding para alinhar com o .main */
+    box-sizing: border-box;
+    height: 100%; /* Ocupa a altura total do .main */
+}
+
 .layout-container{
-    display: flex;       
-    width: 100%;
-    gap: 20px;             
-    height: 70vh;
+    display: flex; /* Alterado para flex para o conteúdo interno */
+    flex-direction: column; /* Coloca as linhas de conteúdo empilhadas */
+    
+    /* Novos/Ajustados: Define a largura do painel de conteúdo */
+    width: 65%; /* Define a largura para 65% */
+    height: 100%; /* Ocupa a altura total do .main */
+    gap: 10px; /* Ajusta o gap */
 }

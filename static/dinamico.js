@@ -13,13 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         terminal.scrollTop = terminal.scrollHeight;
     }
 
-    mensagens_teste = ["ADS ligado","EPS ligado","Carregando bateria...","Modo 1 ativado","Modo 2 ativado","Modo 3 ativado",
-        "Testando sensores...","Sensores ativos!","Testando corrente...","Sistemas nominais!","Ativando paineis solares","Desativando paineis solares",
-        "AAAAA","BBBB","CCCCC","DDDD","EEEEEE","FFFFFF","GGGGGG","HHHHHHH","IIIIIII","JJJJJJJ","KKKKKK"
-    ];
-    for(i in mensagens_teste){
-        printToTerminal(mensagens_teste[i]);
-    }
 
     const tabButtons = document.querySelectorAll(".tab-button");
     const tabPanels = document.querySelectorAll(".tab-panel");
@@ -74,36 +67,141 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //Cria as varáveis usadas no programa
     ///Variáveis para armazenar dados
-    var dado_temperatura1 = [];
-    var dado_temperatura2 = [];
-    var dado_temperatura3 = [];
-    var dado_temperatura4 = [];
-    var dado_temperatura5 = [];
-    var dado_temperatura6 = [];
-    var dado_atitude = [];
-    var dado_corrente_bateria = [];
-    var dado_corrente_painelSolar1 = [];
-    var dado_corrente_painelSolar2 = [];
-    var dado_corrente_painelSolar3 = [];
-    var dado_corrente_painelSolar4 = [];
+    
     
     vartipos_dados = [
     'temperatura1', 'temperatura2', 'temperatura3', 'temperatura4',
-    'temperatura5', 'temperatura6', 'atitude', 'tensao_bateria',
+    'temperatura5', 'temperatura6', 'girometroZ','azimute', 'tensao_bateria',
     'corrente_bateria', 'corrente_painelSolar1', 'corrente_painelSolar2',
     'corrente_painelSolar3', 'corrente_painelSolar4',
     ]
+    dicDados = vartipos_dados.reduce((acc,chave) =>{
+        acc[chave] = [];
+        return acc;
+    },{});
 
     ///Variáveis para determinar um máximo de pontos possíveis nos gráficos
     var maximoPontos = 50;
     const valorMinimo = 0;
+    
+    var graficoTemperatura1,graficoTemperatura2,graficoTemperatura3,graficoTemperatura4,graficoTemperatura5,graficoTemperatura6;
+    var graficoCorrenteBateria,graficoCorrentePainelSolar1,graficoCorrentePainelSolar2,graficoCorrentePainelSolar3,graficoCorrentePainelSolar4;
+    var graficoTensaoPainelSolar1,graficoTensaoPainelSolar2,graficoTensaoPainelSolar3,graficoTensaoPainelSolar4;
+    var graficoAzimute,graficoGirometroZ;
+    
+    //Desenha os gráficos
+    //Ciclagem Térmica
+    graficoTemperatura1 = desenhaGrafico('graficoTemperatura1', 'Temperatura Heater(°C)', 'red');
+    graficoTemperatura2 = desenhaGrafico('graficoTemperatura2', 'Temperatura Heater(°C)', 'red');
+    graficoTemperatura3 = desenhaGrafico('graficoTemperatura3', 'Temperatura Bateria(°C)', 'red');
+    graficoTemperatura4 = desenhaGrafico('graficoTemperatura4', 'Temperatura Bateria(°C)', 'red');
+    graficoTemperatura5 = desenhaGrafico('graficoTemperatura5', 'Temperatura Externo(°C)', 'red');
+    graficoTemperatura6 = desenhaGrafico('graficoTemperatura6', 'Temperatura Externo(°C)', 'red');
+    
+    //Condicionamento da Bateria
+    graficoCorrenteBateria = desenhaGrafico('graficoCorrenteBateria', 'Corrente Bateria', 'blue');
+    graficoCorrentePainelSolar1 = desenhaGrafico('graficoCorrentePainelSolar1', 'Corrente Painel Solar 1', 'blue');
+    graficoCorrentePainelSolar2 = desenhaGrafico('graficoCorrentePainelSolar2', 'Corrente Painel Solar 2', 'blue');
+    graficoCorrentePainelSolar3 = desenhaGrafico('graficoCorrentePainelSolar3', 'Corrente Painel Solar 3', 'blue');
+    graficoCorrentePainelSolar4 = desenhaGrafico('graficoCorrentePainelSolar4', 'Corrente Painel Solar 4', 'blue');
+
+
+    //Determinacao de atitude
+    graficoGirometroZ = desenhaGrafico('graficoGirometroZ', 'Giromtero Z', 'purple');
+    graficoAzimute = desenhaGrafico('graficoAzimute', 'Azimute', 'purple');
 
     ///Variáveis para montar os mostradores
+    modo_atual = '0';
+    dicGraficos = {
+    // Temperaturas
+    'temperatura1': graficoTemperatura1,
+    'temperatura2': graficoTemperatura2,
+    'temperatura3': graficoTemperatura3,
+    'temperatura4': graficoTemperatura4,
+    'temperatura5': graficoTemperatura5,
+    'temperatura6': graficoTemperatura6,
+    
+    // Atitude
+    'girometroZ': graficoGirometroZ,
+    'azimute': graficoAzimute,
+    
+    // Bateria e Correntes
+    'corrente_bateria': graficoCorrenteBateria,
+    'corrente_painelSolar1': graficoCorrentePainelSolar1,
+    'corrente_painelSolar2': graficoCorrentePainelSolar2,
+    'corrente_painelSolar3': graficoCorrentePainelSolar3,
+    'corrente_painelSolar4': graficoCorrentePainelSolar4,
+    'tensao_painelSolar1': graficoTensaoPainelSolar1,
+    'tensao_painelSolar2': graficoTensaoPainelSolar2,
+    'tensao_painelSolar3': graficoTensaoPainelSolar3,
+    'tensao_painelSolar4': graficoTensaoPainelSolar4,
+        
+    };
+    telemetria_por_modo = {
+    '0' : [],
+    'COM' : [],
+    'IV' : [],
+    'ANT' : [],
+    'EST' : [],
+    'M1' : [],
+    'M2' : [],
+    "CT": [
+        "temperatura1", 
+        "temperatura2", 
+        "temperatura3", 
+        "temperatura4", 
+        "temperatura5", 
+        "temperatura6", 
+        "corrente_bateria", 
+        "tensao_bateria"
+    ],
+    
+    "CB": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "corrente_painelSolar1", 
+        "corrente_painelSolar2", 
+        "corrente_painelSolar3", 
+        "corrente_painelSolar4", 
+        "tensao_bateria", 
+        "corrente_bateria"
+    ],
+    
+    "DET": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ],
+    
+    "CA1": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ],
+    
+    "CA2": [
+        "tensao_painelSolar1", 
+        "tensao_painelSolar2", 
+        "tensao_painelSolar3", 
+        "tensao_painelSolar4", 
+        "girometroZ", 
+        "azimute"
+    ]
+    }   
     var valor_tensao_bateria = document.getElementById('Tensao_Bateria');
 
     //Função para atualizar o gráfico de temperatura da bateria
     function atualizarGrafico(grafico, dados) {
         console.log('Updating charts...');
+        console.log(grafico);
         ///Atualiza o gráfico de temperatura da bateria
         grafico.data.labels = Array.from({length: dados.length},(_, i) => (valorMinimo + i).toString());
         grafico.data.datasets[0].data = dados;
@@ -224,164 +322,41 @@ document.addEventListener('DOMContentLoaded', function() {
                         return false;
                     }
                 };
-
-
-
-
-                // Temperatura 1
-                if (isDataPresent(data, 'temperatura1')) {
-                    var temperatura1 = data.temperatura1;
-                    dado_temperatura1.push(temperatura1);
-                    if (dado_temperatura1.length > maximoPontos) {
-                        dado_temperatura1.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura1, dado_temperatura1);
-                }
-
-                // Temperatura 2
-                if (isDataPresent(data, 'temperatura2')) {
-                    var temperatura2 = data.temperatura2;
-                    dado_temperatura2.push(temperatura2);
-                    if (dado_temperatura2.length > maximoPontos) {
-                        dado_temperatura2.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura2, dado_temperatura2);
-                }
-
-                // Temperatura 3
-                if (isDataPresent(data, 'temperatura3')) {
-                    var temperatura3 = data.temperatura3;
-                    dado_temperatura3.push(temperatura3);
-                    if (dado_temperatura3.length > maximoPontos) {
-                        dado_temperatura3.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura3, dado_temperatura3);
-                }
-
-                // Temperatura 4
-                if (isDataPresent(data, 'temperatura4')) {
-                    var temperatura4 = data.temperatura4;
-                    dado_temperatura4.push(temperatura4);
-                    if (dado_temperatura4.length > maximoPontos) {
-                        dado_temperatura4.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura4, dado_temperatura4);
-                }
-
-                // Temperatura 5
-                if (isDataPresent(data, 'temperatura5')) {
-                    var temperatura5 = data.temperatura5;
-                    dado_temperatura5.push(temperatura5);
-                    if (dado_temperatura5.length > maximoPontos) {
-                        dado_temperatura5.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura5, dado_temperatura5);
-                }
-
-                // Temperatura 6
-                if (isDataPresent(data, 'temperatura6')) {
-                    var temperatura6 = data.temperatura6;
-                    dado_temperatura6.push(temperatura6);
-                    if (dado_temperatura6.length > maximoPontos) {
-                        dado_temperatura6.shift();
-                    }
-                    atualizarGrafico(graficoTemperatura6, dado_temperatura6);
-                }
-
-                // Atitude
-                if (isDataPresent(data, 'atitude')) {
-                    var atitude = data.atitude;
-                    dado_atitude.push(atitude);
-                    if (dado_atitude.length > maximoPontos) {
-                        dado_atitude.shift();
-                    }
-                    atualizarGrafico(graficoAtitude, dado_atitude);
-                }
-
-                // Corrente Bateria
-                if (isDataPresent(data, 'corrente_bateria')) {
-                    var corrente_bateria = data.corrente_bateria;
-                    dado_corrente_bateria.push(corrente_bateria);
-                    if (dado_corrente_bateria.length > maximoPontos) {
-                        dado_corrente_bateria.shift();
-                    }
-                    atualizarGrafico(graficoCorrenteBateria, dado_corrente_bateria);
-                }
-
-                // Corrente Painel Solar 1
-                if (isDataPresent(data, 'corrente_painelSolar1')) {
-                    var corrente_painelSolar1 = data.corrente_painelSolar1;
-                    dado_corrente_painelSolar1.push(corrente_painelSolar1);
-                    if (dado_corrente_painelSolar1.length > maximoPontos) {
-                        dado_corrente_painelSolar1.shift();
-                    }
-                    atualizarGrafico(graficoCorrentePainelSolar1, dado_corrente_painelSolar1);
-                }
-
-                // Corrente Painel Solar 2
-                if (isDataPresent(data, 'corrente_painelSolar2')) {
-                    var corrente_painelSolar2 = data.corrente_painelSolar2;
-                    dado_corrente_painelSolar2.push(corrente_painelSolar2);
-                    if (dado_corrente_painelSolar2.length > maximoPontos) {
-                        dado_corrente_painelSolar2.shift();
-                    }
-                    atualizarGrafico(graficoCorrentePainelSolar2, dado_corrente_painelSolar2);
-                }
-
-                // Corrente Painel Solar 3
-                if (isDataPresent(data, 'corrente_painelSolar3')) {
-                    var corrente_painelSolar3 = data.corrente_painelSolar3;
-                    dado_corrente_painelSolar3.push(corrente_painelSolar3);
-                    if (dado_corrente_painelSolar3.length > maximoPontos) {
-                        dado_corrente_painelSolar3.shift();
-                    }
-                    atualizarGrafico(graficoCorrentePainelSolar3, dado_corrente_painelSolar3);
-                }
-
-                // Corrente Painel Solar 4
-                if (isDataPresent(data, 'corrente_painelSolar4')) {
-                    var corrente_painelSolar4 = data.corrente_painelSolar4;
-                    dado_corrente_painelSolar4.push(corrente_painelSolar4);
-                  if (dado_corrente_painelSolar4.length > maximoPontos) {
-                        dado_corrente_painelSolar4.shift();
-                    }
-                    atualizarGrafico(graficoCorrentePainelSolar4, dado_corrente_painelSolar4);
-                }
+                
+                const createGraphics = (sensorData,key) =>{
+                    if (isDataPresent(sensorData, key )){
+                        var data_point = data[key];
+                        dicDados[key].push(data_point);
+                        if(dicDados[key].length > maximoPontos){
+                            dicDados[key].shift();
+                        }
+                        atualizarGrafico(dicGraficos[key], dicDados[key]);
+                    }
+                }
+                dadosSensor = data;
+                modo_atual = data['modo'];
+                dadosSensor = data;
+                delete dadosSensor['modo'];
+                delete dadosSensor['tensao_bateria'];
+                chavesDoSensor = Object.keys(dadosSensor);
+                dadosDoModoAtual = telemetria_por_modo[modo_atual];
+                for (const key of chavesDoSensor) {
+                    if(dadosDoModoAtual.includes(key)){
+                        createGraphics(data, key);
+                    }
+                }
                 // Tensão Bateria
                 if (isDataPresent(data, 'tensao_bateria')) {
                     var tensao_bateria = data.tensao_bateria;
                     valor_tensao_bateria.textContent = tensao_bateria.toFixed(2);
                     atualizaBateria();
                 } 
+                })
                 
-            })
             .catch(error => console.log(error));
     }    
 
 
-    var graficoTemperatura1,graficoTemperatura2,graficoTemperatura3,graficoTemperatura4,graficoTemperatura5,graficoTemperatura6;
-    var graficoCorrenteBateria,graficoCorrentePainelSolar1,graficoCorrentePainelSolar2,graficoCorrentePainelSolar3,graficoCorrentePainelSolar4;
-    var graficoAtitude;
-    
-    //Desenha os gráficos
-    //Ciclagem Térmica
-    graficoTemperatura1 = desenhaGrafico('graficoTemperatura1', 'Temperatura Heater(°C)', 'red');
-    graficoTemperatura2 = desenhaGrafico('graficoTemperatura2', 'Temperatura Heater(°C)', 'red');
-    graficoTemperatura3 = desenhaGrafico('graficoTemperatura3', 'Temperatura Bateria(°C)', 'red');
-    graficoTemperatura4 = desenhaGrafico('graficoTemperatura4', 'Temperatura Bateria(°C)', 'red');
-    graficoTemperatura5 = desenhaGrafico('graficoTemperatura5', 'Temperatura Externo(°C)', 'red');
-    graficoTemperatura6 = desenhaGrafico('graficoTemperatura6', 'Temperatura Externo(°C)', 'red');
-    
-    //Condicionamento da Bateria
-    graficoCorrenteBateria = desenhaGrafico('graficoCorrenteBateria', 'Corrente Bateria', 'blue');
-    graficoCorrentePainelSolar1 = desenhaGrafico('graficoCorrentePainelSolar1', 'Corrente Painel Solar 1', 'blue');
-    graficoCorrentePainelSolar2 = desenhaGrafico('graficoCorrentePainelSolar2', 'Corrente Painel Solar', 'blue');
-    graficoCorrentePainelSolar3 = desenhaGrafico('graficoCorrentePainelSolar3', 'Corrente Painel Solar', 'blue');
-    graficoCorrentePainelSolar4 = desenhaGrafico('graficoCorrentePainelSolar4', 'Corrente Painel Solar', 'blue');
-
-
-    //Determinacao de atitude
-    graficoAtitude = desenhaGrafico('graficoAtitude', 'Atitude', 'purple');
 
     
     function resetarGrafico(grafico) {
@@ -412,19 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         // Reinicializa as listas de dados
-        dado_temperatura1 = [];
-        dado_temperatura2 = [];
-        dado_temperatura3 = [];
-        dado_temperatura4 = [];
-        dado_temperatura5 = [];
-        dado_temperatura6 = [];
-        dado_atitude = [];
-        dado_corrente_bateria = [];
-        dado_corrente_painelSolar1 = [];
-        dado_corrente_painelSolar2 = [];
-        dado_corrente_painelSolar3 = [];
-        dado_corrente_painelSolar4 = [];
-
+        for (i in dicDados){
+            i.clear();
+        }
     });
 
     //Cria mostrador da bateria
@@ -437,10 +402,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let cor;
         // Cores dos retângulos
         const listaDeRetangulos = Array.from({ length: 100 }, (_, i) => `ret_${i + 1}`);
-        console.log(listaDeRetangulos);
         // Cor do contorno
         const listaDeBordas = Array.from({ length: 100 }, (_, i) => `borda_${i + 1}`);
-        console.log(listaDeBordas);
 
         // Lógica para definir as cores com base no nível da bateria
         if (battery_level >= 66) {
