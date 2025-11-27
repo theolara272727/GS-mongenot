@@ -29,7 +29,7 @@ modos = ['0','COM','CT','IV','ANT','CB','EST','DET','CA1','CA2','M1','M2']
 
 tipos_dados = [
     'temperatura1', 'temperatura2', 'temperatura3', 'temperatura4',
-    'temperatura5', 'temperatura6', 'girometroZ', 'tensao_bateria',
+    'temperatura5', 'temperatura6', 'girometroZ','azimute', 'tensao_bateria',
     'corrente_bateria', 'corrente_painelSolar1', 'tensao_painelSolar1', 'corrente_painelSolar2', 'tensao_painelSolar2',
     'corrente_painelSolar3', 'tensao_painelSolar3','corrente_painelSolar4','tensao_painelSolar4'
 ]

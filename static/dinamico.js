@@ -73,7 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     'temperatura1', 'temperatura2', 'temperatura3', 'temperatura4',
     'temperatura5', 'temperatura6', 'girometroZ','azimute', 'tensao_bateria',
     'corrente_bateria', 'corrente_painelSolar1', 'corrente_painelSolar2',
-    'corrente_painelSolar3', 'corrente_painelSolar4',
+    'corrente_painelSolar3', 'corrente_painelSolar4','tensao_painelSolar1','tensao_painelSolar2',
+    'tensao_painelSolar3','tensao_painelSolar4'
     ]
     dicDados = vartipos_dados.reduce((acc,chave) =>{
         acc[chave] = [];
@@ -104,7 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
     graficoCorrentePainelSolar2 = desenhaGrafico('graficoCorrentePainelSolar2', 'Corrente Painel Solar 2', 'blue');
     graficoCorrentePainelSolar3 = desenhaGrafico('graficoCorrentePainelSolar3', 'Corrente Painel Solar 3', 'blue');
     graficoCorrentePainelSolar4 = desenhaGrafico('graficoCorrentePainelSolar4', 'Corrente Painel Solar 4', 'blue');
-
+    graficoTensaoPainelSolar1 = desenhaGrafico('graficoTensaoPainelSolar1', 'Tensão Painel Solar 1', 'blue');
+    graficoTensaoPainelSolar2 = desenhaGrafico('graficoTensaoPainelSolar2', 'Tensão Painel Solar 2', 'blue');
+    graficoTensaoPainelSolar3 = desenhaGrafico('graficoTensaoPainelSolar3', 'Tensão Painel Solar 3', 'blue');
+    graficoTensaoPainelSolar4 = desenhaGrafico('graficoTensaoPainelSolar4', 'Tensão Painel Solar 4', 'blue');
 
     //Determinacao de atitude
     graficoGirometroZ = desenhaGrafico('graficoGirometroZ', 'Giromtero Z', 'purple');
